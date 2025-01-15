@@ -17,6 +17,6 @@ incremented_infinity = floor(refractoryperiod/tstep);
 thresh_increment = zeros([1 incremented_length]) ; 
 thresh_increment(1:incremented_infinity) = inf;
 thresh_increment(incremented_infinity+1:incremented_length) = ...
-    thresh_leap * exp(-thresh_decay * ([1:(incremented_length -incremented_infinity)] * tstep));
+    thresh_leap * exp(-thresh_decay * ((1:(incremented_length -incremented_infinity)) * tstep));
 
 end
