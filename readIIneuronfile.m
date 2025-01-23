@@ -8,6 +8,9 @@ function IIneuron = readIIneuronfile(fname, simulation)
 if simulation.N_IIs > n_lines
     error("readIIneuronfile: simulation.N_IIs > n_lines") ;
 end
+if simulation.N_IIs == 0
+    IIneuron = [] ;
+end
 for IIno = simulation.N_IIs:-1:1
     IIneuron(IIno).n_synapses = IItable(IIno,1).n_synapses ;
     IIneuron(IIno).tau = IItable(IIno,2).tau ;
