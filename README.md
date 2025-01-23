@@ -1,17 +1,5 @@
-#  Model of neocortical pyramidal neuron.
+#  Model of network with two point neurons and inhibitory interneurons.
 
 ---
 
-## Matlab m-files
-
-PN-spikes_shun.m:
-actual neuron
-
-runTPNspines_shun.m:
-file for testing the neuron
-    
-etupAlphaFunction.m: 
-sets up alpha function for excitatory synapses
-    
-spikeraster.m :
-draws spikes as a raster
+For information, see TPN_documentation.pdf
