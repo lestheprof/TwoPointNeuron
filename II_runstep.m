@@ -44,8 +44,10 @@ if (IIneuron(IIno).activation(ts) > IIneuron(IIno).II_threshold(ts)) % spike!
 
     % what to do after firing gets inserted here: should the activation get
     % reduced?
-    if (IIneuron(IIno).resetvalue >= 0) % reset value nonnnegative imples reset to this value
+    if (IIneuron(IIno).resetvalue >= -10) % reset value ge -10 imples reset to this value
         IIneuron(IIno).activation(ts) = IIneuron(IIno).resetvalue ;
+    else
+        % not currently reset at all
     end
 else
     IIspike = 0 ;

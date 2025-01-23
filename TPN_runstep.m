@@ -201,11 +201,13 @@ if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
 
     % what to do to the TPN after firing gets inserted here: should
     % basalactivation or apicalactivation get reduced?
-    if apical(tpnno).resetvalue >= 0 % reset if value nonnegative
+    if apical(tpnno).resetvalue >= 0 % reset if value ge -10
         apicalactivation(tpnno,ts) = apical(tpnno).resetvalue ;
     end
-    if basal(tpnno).resetvalue >= 0 % reset if value nonnegative
+    if basal(tpnno).resetvalue >= -10 % reset if value ge -10
         basalactivation(tpnno,ts) = basal(tpnno).resetvalue ;
+    else
+        % not currently reset at all
     end
 else
     isspike = 0 ;

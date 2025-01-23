@@ -111,6 +111,9 @@ end
 % array for apical synapse activations (extra length to stop late spikes
 % falling off the end)
 % the per-synapse post-synaptic values are used in this version
+% preallocate space for apical and basal activstions
+apicalactivation = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthaplha_apical]) ;
+basalactivation  = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthalpha_basal]) ;
 for tpnno = 1:simulation.N_TPNs
     apical(tpnno).apicalpostsynapse = zeros([apical(tpnno).n_apicalinputs (simulation.simlength  + 10 * maxlengthaplha_apical)]);
     % array for basal activations
@@ -133,12 +136,31 @@ for tpnno = 1:simulation.N_TPNs
     % apical(tpnno).apicalspinefracleak = 0 ;
     basal(tpnno).basalspinefracleak = simulation.timestep/(basal(tpnno).R_basal_spine  * basal(tpnno).C_basal_spine) ;
     % basal(tpnno).basalspinefracleak =  0 ;
+    
+    % vector for apical activation (charged by apicalcurrent, capacitor and
+    % parallel resistor)
+    % set apical and basal activations to reset value, instead of 0 if
+    % value is ge -10
+    if (apical(tpnno).resetvalue >= -10)
+        apicalactivation(tpnno,:) = ones([1 simulation.simlength + 10 * maxlengthaplha_apical]) * apical(tpnno).resetvalue ;
+    else % 0 otherwise
+        apicalactivation(tpnno,:) = zeros([1 simulation.simlength + 10 * maxlengthaplha_apical]) ;
+
+    end
+    % vector for basal activation (charged by basalcurrent, capacitor and
+    % parallel resistor)
+    if (basal(tpnno).resetvalue >= -10)
+        basalactivation(tpnno,:)  = ones([1 simulation.simlength + 10 * maxlengthalpha_basal])  * basal(tpnno).resetvalue;
+    else % 0 otherwise
+        basalactivation(tpnno,:)  = zeros([1 simulation.simlength + 10 * maxlengthalpha_basal]);
+    end
 end
 apicalcurrent = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthaplha_apical]) ;
 % vector for basal current
 basalcurrent = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthalpha_basal]) ;
 % vector for apical activation (charged by apicalcurrent, capacitor and
 % parallel resistor)
+% set apical and basal activations to reset value, instead of 0
 apicalactivation = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthaplha_apical]) ;
 % vector for basal activation (charged by basalcurrent, capacitor and
 % parallel resistor)f
@@ -235,7 +257,13 @@ for IIno = 1:simulation.N_IIs
     % set up activation
     % first calculate the max length of the alpha function
     IIneuron(IIno).alpha_synapse = setupAlphaFunctionV2(simulation.timestep, IIneuron(IIno).tau );
-    IIneuron(IIno).activation = zeros ([1 simulation.simlength + 10 * length(IIneuron(IIno).alpha_synapse)]) ;
+    if (IIneuron(IIno).resetvalue >= -10)
+        IIneuron(IIno).activation = ones([1 simulation.simlength + 10 * length(IIneuron(IIno).alpha_synapse)]) * IIneuron(IIno).resetvalue ;
+    
+    else % 0 otherwise
+        IIneuron(IIno).activation = zeros([1 simulation.simlength + 10 * length(IIneuron(IIno).alpha_synapse)]);   
+    end
+
     % set up threhold array
     IIneuron(IIno).II_th_inc = calc_thresh_increment(IIneuron(IIno).thresh_leap, IIneuron(IIno).thresh_decay, ...
         IIneuron(IIno).refractoryperiod, IIneuron(IIno).relrefperiod, simulation.timestep);
