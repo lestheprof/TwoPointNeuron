@@ -29,7 +29,14 @@ while ((IIneuron(IIno).spikeno <= size(IIneuron(IIno).inputs,1)) && ...
         IIneuron(IIno).activation(ts:(ts + alphalen) -1) + (alphafn * ...
         IIneuron(IIno).synapsemultiplier) ;
     IIneuron(IIno).spikeno = IIneuron(IIno).spikeno + 1;
+    IIneuron(IIno).alphalen = alphalen ; % to allow use later on in function
 end
+if (ts > 1)
+    % 24 Jan 2025: calculate activation including decrement due to leakage
+    decrement = (IIneuron(IIno).activation(ts-1) - IIneuron(IIno).resetvalue) * IIneuron(IIno).fracleak ;
+    IIneuron(IIno).activation(ts) = IIneuron(IIno).activation(ts) - decrement ;
+end % ts
+
 % decide whether to spike at this timestep, and store spike if so.
 if (IIneuron(IIno).activation(ts) > IIneuron(IIno).II_threshold(ts)) % spike!
     IIspike = 1 ;
@@ -43,9 +50,9 @@ if (IIneuron(IIno).activation(ts) > IIneuron(IIno).II_threshold(ts)) % spike!
         IIneuron(IIno).thresh_increment ;
 
     % what to do after firing gets inserted here: should the activation get
-    % reduced?
+    % reduced? 
     if (IIneuron(IIno).resetvalue >= -10) % reset value ge -10 imples reset to this value
-        IIneuron(IIno).activation(ts) = IIneuron(IIno).resetvalue ;
+        IIneuron(IIno).activation(ts:ts+IIneuron(IIno).alphalen) = IIneuron(IIno).resetvalue ;
     else
         % not currently reset at all
     end

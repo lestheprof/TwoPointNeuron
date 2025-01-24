@@ -160,11 +160,7 @@ apicalcurrent = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthap
 basalcurrent = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthalpha_basal]) ;
 % vector for apical activation (charged by apicalcurrent, capacitor and
 % parallel resistor)
-% set apical and basal activations to reset value, instead of 0
-apicalactivation = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthaplha_apical]) ;
-% vector for basal activation (charged by basalcurrent, capacitor and
-% parallel resistor)f
-basalactivation = zeros([simulation.N_TPNs simulation.simlength + 10 * maxlengthalpha_basal]) ;
+
 % vector for axon hillock activation
 ahactiv = zeros([simulation.N_TPNs simulation.simlength]) ;
 

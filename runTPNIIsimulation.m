@@ -208,23 +208,29 @@ spikelist = createspikelist(simulation, neuron, IIneuron) ;
 figure ;
 spikeraster(spikelist)  ;
 
+set(groot,'defaultLineLineWidth',2.0) ;
+
 for tpnno = 1:simulation.N_TPNs
     figure ;
-    plot(ahactiv(tpnno,:)') ;
+    plot(ahactiv(tpnno,:)', 'DisplayName','ahactiv') ;
     hold on
-    plot(neuron(tpnno).TP_threshold) ;
-    plot(apicalactivation(tpnno,:)) ;
-    plot(basalactivation(tpnno,:)) ;
+    plot(neuron(tpnno).TP_threshold, 'DisplayName','threshold') ;
+    plot(apicalactivation(tpnno,:), 'DisplayName','ap activ') ;
+    plot(basalactivation(tpnno,:), 'DisplayName','ba activ') ;
     title(['TPN ', num2str(tpnno), ' neuron axon hillock and threshold']) ;
+    legend ;
 end
 for IIno = 1:simulation.N_IIs
     figure;
-    plot(IIneuron(IIno).activation) ;
+    plot(IIneuron(IIno).activation, 'DisplayName','activation') ;
     hold on
-    plot(IIneuron(IIno).II_threshold) ;
+    plot(IIneuron(IIno).II_threshold, 'DisplayName','threshold') ;
     title(['II ', num2str(IIno),  ' neuron axon hillock and threshold']) ;
-
+    legend ;
 end
+
+format long
+max(ahactiv)
 
 end
 % xlim([0.4/simulation.timestep 0.6/simulation.timestep]) ;

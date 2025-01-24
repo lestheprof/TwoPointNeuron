@@ -20,6 +20,12 @@ for apno = simulation.N_TPNs:-1:1 % for each TPN
     apical(apno).R_synap_spine = apicaltable(apno, 8).R_synap_spine ;
     apical(apno).synapsemultiplier = apicaltable(apno, 9).synapsemultiplier ;
     apical(apno).resetvalue = apicaltable(apno, 10).resetvalue ;
+    doreset = lower(apicaltable(apno,11).doreset) ;
+    if (doreset{1}) == 'y'
+        apical(apno).doreset = 1 ;
+    else
+        apical(apno).doreset = 0 ;
+    end
     apical(apno).apicalsynapseweights = zeros([1, apical(apno).n_apicalinputs]) ;
 end
 % Other members of apical structure added later.
