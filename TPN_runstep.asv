@@ -68,6 +68,7 @@ while ((apical(tpnno).apicalspikeno <= size(apical(tpnno).apicalinputs,1)) && ..
         apical(tpnno).apicalpostsynapse(apical(tpnno).apicalinputs(apical(tpnno).apicalspikeno,2), ts:(ts + alphalen) -1) / apical(tpnno).R_synap_dendrite ;
     %
     apical(tpnno).apicalspikeno = apical(tpnno).apicalspikeno + 1 ;
+    apical(tpnno).aplhalen = alphalen ; % usable for resetting after spiking
 end
 
 % calculate apical activation:
@@ -76,8 +77,10 @@ end
 % apical current is a current (I)
 % apicalactivation is a voltage: voltage increment is (i * delta t)/C
 if (ts > 1)
-    apicalactivation(tpnno,ts) = apicalactivation(tpnno,ts-1) * (1 - apical(tpnno).apicalfracleak) + ... % decrement due to leakage
-        ((apicalcurrent(tpnno,ts) * simulation.timestep)/apical(tpnno).C_apical) ; % increment due to incoming current
+    % Jan 24 2025: decrement is towards reset value, not 0
+    decrement = (apicalactivation(tpnno,ts-1) - apical(tpnno).resetvalue) * apical(tpnno).apicalfracleak ;
+    apicalactivation(tpnno,ts) = apicalactivation(tpnno,ts-1) - decrement ... % decrement due to leakage
+        + ((apicalcurrent(tpnno,ts) * simulation.timestep)/apical(tpnno).C_apical) ; % increment due to incoming current
 end
 % apply apical shunt, if any.
 if ((shunts(tpnno).noapicalshunts > 0) && (isfield(shunts, 'apicalshuntinputs')))
@@ -141,12 +144,15 @@ while ((basal(tpnno).basalspikeno <= size(basal(tpnno).basalinputs,1)) ...
         basal(tpnno).basalpostsynapse(basal(tpnno).basalinputs(basal(tpnno).basalspikeno,2), ts:(ts + alphalen) -1) / basal(tpnno).R_synba_dendrite ;
 
     basal(tpnno).basalspikeno = basal(tpnno).basalspikeno + 1 ;
+    basal(tpnno).alphalen = alphalen ;
 end
 
 % calculate basal activation:
 % the basal current a current (I)
 if (ts > 1)
-    basalactivation(tpnno,ts) = basalactivation(tpnno,ts-1) * (1 - basal(tpnno).basalfracleak) + ...
+    % Jan 24 2025: decrement is towards reset value, not 0
+    decrement = (basalactivation(tpnno,ts-1) - basal(tpnno).resetvalue) * basal(tpnno).basalfracleak ;
+    basalactivation(tpnno,ts) = basalactivation(tpnno,ts-1) - decrement + ...
         ((basalcurrent(tpnno,ts)*simulation.timestep)/basal(tpnno).C_basal) ;
 end
 if ((shunts(tpnno).nobasalshunts  > 0)  && (~isempty(shunts(tpnno).basalshuntinputs)))
@@ -184,8 +190,13 @@ end
 
 % Try equation from Reza & Ahsan (R^2 + 2*R +2*C *
 % (1+mod(R)))for axon hillock activation
-ahactiv(tpnno,ts) = basalactivation(tpnno,ts)^2  +  2 *  basalactivation(tpnno,ts) +...
-    2 * apicalactivation(tpnno,ts) * (1 + abs(basalactivation(tpnno, ts))) ;
+% ahactiv(tpnno,ts) = basalactivation(tpnno,ts)^2  +  2 *  basalactivation(tpnno,ts) +...
+%     2 * apicalactivation(tpnno,ts) * (1 + abs(basalactivation(tpnno, ts))) ;
+% might do better to consider deflection from reset/initial value rather
+% than actual values.
+ahactiv(tpnno,ts) = (basalactivation(tpnno,ts) - basal(tpnno).resetvalue)^2  +  2 * (basalactivation(tpnno,ts) - basal(tpnno).resetvalue) +...
+    2 * (apicalactivation(tpnno,ts) - apical(tpnno).resetvalue) * (1 + abs((basalactivation(tpnno,ts) - basal(tpnno).resetvalue))) ;
+
 
 % decide whether to spike at this timestep, and store spike if so.
 if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
@@ -201,8 +212,14 @@ if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
 
     % what to do to the TPN after firing gets inserted here: should
     % basalactivation or apicalactivation get reduced?
-    if apical(tpnno).resetvalue >= 0 % reset if value nonnegative
-        
+    if (apical(tpnno).doreset == 1)
+        apicalactivation(tpnno,ts:ts+apical.alphalen) = apical(tpnno).resetvalue ;
+    end
+    if (basal(tpnno).doreset == 1)
+        basalactivation(tpnno,ts+basal) = basal(tpnno).resetvalue ;
+    else
+        % not currently reset at all
+    end
 else
     isspike = 0 ;
 end
