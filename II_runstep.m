@@ -13,8 +13,10 @@ function [IIspike, IIneuron] = II_runstep(ts, IIno, IIneuron, simulation)
 % IIneuron, , possib;ly updated
 % 
 % started 28 Nov 2024 LSS
+% modified 5 Fen2025 LSS
 %
 % do we have any incoming spikes at this ts?
+
 while ((IIneuron(IIno).spikeno <= size(IIneuron(IIno).inputs,1)) && ...
         (IIneuron(IIno).inputs(IIneuron(IIno).spikeno,1) == ts)) % calculate for each synapse: is there a new II spike input? 
     % how should we use alphasynapse in II neurons?
