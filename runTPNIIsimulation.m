@@ -229,8 +229,8 @@ for IIno = 1:simulation.N_IIs
     legend ;
 end
 
-format long
-max(ahactiv)
+% format long
+% max(ahactiv)
 
 end
 % xlim([0.4/simulation.timestep 0.6/simulation.timestep]) ;

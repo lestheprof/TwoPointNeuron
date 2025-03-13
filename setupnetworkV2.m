@@ -99,10 +99,14 @@ for tpnno = 1:simulation.N_TPNs
     if length(apical(tpnno).alpha_apical) > maxlengthaplha_apical
         maxlengthaplha_apical = length(apical(tpnno).alpha_apical) ;
     end
+    % initialise alphalen
+    apical(tpnno).alphalen = length(apical(tpnno).alpha_apical) ;
     basal(tpnno).alpha_basal = setupAlphaFunctionV2(simulation.timestep, basal(tpnno).tau_basal );
     if length(basal(tpnno).alpha_basal) > maxlengthalpha_basal
         maxlengthalpha_basal = length(basal(tpnno).alpha_basal) ;
     end
+    % initialise alphalen
+    basal(tpnno).alphalen = length(basal(tpnno).alpha_basal) ;
 end
 
 %% array declarations, 1st index is neuron no.
