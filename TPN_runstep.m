@@ -216,7 +216,7 @@ if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
         apicalactivation(tpnno,ts:ts+apical(tpnno).alphalen) = apical(tpnno).resetvalue ;
     end
     if (basal(tpnno).doreset == 1)
-        basalactivation(tpnno,ts+basal(tpnno).alphalen) = basal(tpnno).resetvalue ;
+        basalactivation(tpnno,ts:ts+basal(tpnno).alphalen) = basal(tpnno).resetvalue ;
     end
 else
     isspike = 0 ;
