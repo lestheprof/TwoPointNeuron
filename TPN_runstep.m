@@ -196,7 +196,9 @@ end
 % than actual values.
 ahactiv(tpnno,ts) = (basalactivation(tpnno,ts) - basal(tpnno).resetvalue)^2  +  2 * (basalactivation(tpnno,ts) - basal(tpnno).resetvalue) +...
     2 * (apicalactivation(tpnno,ts) - apical(tpnno).resetvalue) * (1 + abs((basalactivation(tpnno,ts) - basal(tpnno).resetvalue))) ;
-
+% if (ts == 10000)
+%     xxx = 1 ;
+% end
 
 % decide whether to spike at this timestep, and store spike if so.
 if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
@@ -207,7 +209,7 @@ if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
     end
     neuron(tpnno).spikes(neuron(tpnno).spikecount) = ts ;
     % update threshold
-    neuron(tpnno).TP_threshold(ts:ts + neuron(tpnno).th_inc_length -1) = neuron(tpnno).TP_threshold(ts:ts + neuron(tpnno).th_inc_length -1) + ...
+    neuron(tpnno).TP_threshold(ts+1:ts + neuron(tpnno).th_inc_length) = neuron(tpnno).TP_threshold(ts + 1:ts + neuron(tpnno).th_inc_length) + ...
         neuron(tpnno).thresh_increment ;
 
     % what to do to the TPN after firing gets inserted here: should
@@ -215,7 +217,7 @@ if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
     if (apical(tpnno).doreset == 1)
         apicalactivation(tpnno,ts:ts+apical(tpnno).alphalen) = apical(tpnno).resetvalue ;
     end
-    if (basal(tpnno).doreset == 1)
+    if (basal(tpnno).doreset == 1) % error below fixed 19 3 2025
         basalactivation(tpnno,ts:ts+basal(tpnno).alphalen) = basal(tpnno).resetvalue ;
     end
 else
