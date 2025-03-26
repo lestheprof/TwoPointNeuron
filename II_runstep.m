@@ -58,6 +58,7 @@ if (IIneuron(IIno).activation(ts) > IIneuron(IIno).II_threshold(ts)) % spike!
     else
         % not currently reset at all
     end
+    % II neuron spike time adaptation goes here
 else
     IIspike = 0 ;
 end
