@@ -220,6 +220,9 @@ if (ahactiv(tpnno,ts) > neuron(tpnno).TP_threshold(ts)) % spike!
     if (basal(tpnno).doreset == 1) % error below fixed 19 3 2025
         basalactivation(tpnno,ts:ts+basal(tpnno).alphalen) = basal(tpnno).resetvalue ;
     end
+    % TPN spike-time adaptation call goes here: two parts, basal and apical.
+    basal(tpnno).basalsynapseweights  =  basalupdate(basal, tpnno, ts) ;
+    apical(tpnno).apicalsynapseweights =  apicalupdate(apical, tpnno, ts) ;
 else
     isspike = 0 ;
 end
