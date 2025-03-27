@@ -20,6 +20,7 @@ for apno = simulation.N_TPNs:-1:1 % for each TPN
     apical(apno).R_synap_spine = apicaltable(apno, 8).R_synap_spine ;
     apical(apno).synapsemultiplier = apicaltable(apno, 9).synapsemultiplier ;
     apical(apno).resetvalue = apicaltable(apno, 10).resetvalue ;
+    apical(apno).wtchange = apicaltable(apno, 12).wtchange ;
     doreset = lower(apicaltable(apno,11).doreset) ;
     if (doreset{1}) == 'y'
         apical(apno).doreset = 1 ;

@@ -20,6 +20,7 @@ for basno = simulation.N_TPNs:-1:1 % for each TPN
     basal(basno).R_synba_spine = basaltable(basno, 8).R_synba_spine ;
     basal(basno).synapsemultiplier = basaltable(basno, 9).synapsemultiplier ;
     basal(basno).resetvalue = basaltable(basno, 10).resetvalue ;
+    basal(basno).wtchange = basaltable(basno, 12).wtchange ;
     doreset = lower(basaltable(basno,11).doreset) ;
     if ((doreset{1}) == 'y')
         basal(basno).doreset = 1 ;
