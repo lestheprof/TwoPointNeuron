@@ -1,24 +1,33 @@
 function [basalinputs, apicalinputs, apicalshuntinputs, basalshuntinputs, IIinputs] = readexternalinput(fname)
 %readexternalinput reads external spiking input from file fname
+%   X to Input units
 %   B basal input, A apical input, AS apical shunt, BS basal shunt, II
 %   inhibitory ionternmeuron
 % LSS 17 Dec 2024 started
+% LSS 3 Sept 2025 : updated to include input units (X)
 % 
 % read file into table
 [n_lines, inputtable] = readnetwork(fname) ;
 % preallocate space for all the different inputs
+xinputs = zeros([n_lines 3]) ;
 basalinputs = zeros([n_lines 3]) ;
 apicalinputs = zeros([n_lines 3]) ;
 apicalshuntinputs = zeros([n_lines 3]) ;
 basalshuntinputs = zeros([n_lines 3]) ;
 IIinputs = zeros([n_lines 3]) ;
+xno = 0 ;
 bno = 0;
 ano = 0 ;
 asno = 0 ;
 bsno = 0 ;
 iino = 0 ;
 for inputno = 1:n_lines % for each input
-    switch char(inputtable(inputno,1).inputtype)
+    switch upper(char(inputtable(inputno,1).inputtype))
+        case 'X'
+            xno = xno + 1 ;
+            xinputs(xno, 1) = inputtable(inputno,2).Nno ;
+            xinputs(xno, 2) = inputtable(inputno,3).time ;
+            xinputs(xno, 3) = inputtable(inputno,4).synapseno ; % not relevant for this type of input
         case 'A'
             ano = ano + 1;
             apicalinputs(ano, 1) = inputtable(inputno,2).Nno ;
@@ -48,6 +57,7 @@ for inputno = 1:n_lines % for each input
             error("readexternalinput: invalid neuron type in external input") ;
     end
     % shorten arrays of input prior to returning them
+    xinputs = xinputs(1:xno, :) ;
     apicalinputs = apicalinputs(1:ano, :) ;
     basalinputs = basalinputs(1:bno, :) ;
     apicalshuntinputs = apicalshuntinputs(1:asno,:) ;

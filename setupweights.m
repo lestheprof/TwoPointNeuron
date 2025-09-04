@@ -1,12 +1,18 @@
 function [basal, apical, shunts, IIsynapse] = setupweights(weightfile, basal, apical, shunts, IIsynapse)
 % setupweights% sets up the weights reading from the table in weightfile
+% parameters
+% basal structure holding basal info for TPNs
+% apical structure holding apical structure for TPNs
+% shunts strcuture holding shunt info for TPNs
+% IIsynapse  structure holding info on II synapses
 
 
 % read in table of weights from weightfile
 [n_weights, weighttable] = readnetwork(weightfile) ;
 
+% note that input neurons can only be the source of a weight
 for wtno = 1:n_weights % test each arc
-    switch char(weighttable(wtno,1).neuron_type)
+    switch upper(char(weighttable(wtno,1).neuron_type)) % upper or lower case
         case 'TPN' % two point neuron weights
             switch char(weighttable(wtno,3).syn_type)
                 case 'A'

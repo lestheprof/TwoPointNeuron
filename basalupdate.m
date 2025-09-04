@@ -13,7 +13,7 @@ for synapseno = 1:basal(tpnno).n_basalinputs
             wtnew(synapseno) = basal(tpnno).basalsynapseweights(synapseno) + basal(tpnno).wtchange * alphaval ;
             % do we want to change the delay as well?
         else
-            % what to do with synapse when it didn't contribute?
+            % what to do with synapse when it didn't contribute? 
             wtnew(synapseno) = basal(tpnno).basalsynapseweights(synapseno) * 0.98 ;
             % do we want to change the delay as well?
         end

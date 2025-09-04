@@ -1,4 +1,6 @@
-function spikelist = runTPNIIsimulation(simfile, apicalfile, basalfile, shuntfile, neuronfile, iifile, weightfile, connectionfile, externalinputs)
+function spikelist = runTPNIIsimulation(simfile, apicalfile, basalfile, shuntfile, neuronfile, iifile, weightfile, ...
+    connectionfile, externalinputs, drivinginputinfo ...
+    )
 % runTPNIIsimulation runs the simulation.
 %
 % parameters are fhe file names for all the parameters
@@ -11,12 +13,15 @@ function spikelist = runTPNIIsimulation(simfile, apicalfile, basalfile, shuntfil
 % weightfile info about all the weights
 % connectionfile info about all the connections between neurons
 % externalinputs info about all the externally generated spikes input.
+% inputdir has the directory in which the files to be processed reside
+% filelist is the list of files to be processed.
 
 % LSS 18 Dec 2024.
 % LSS 15 Jan2025: calls setupweights before setupNetworkV2. Matters because
 % setupNetworkV2 uses shunting weights to set up values inside shunts
 % structure. Also added resetvalue to apical, basal and IIneuron structures
 % to optionally allow resetting activation after a spike is generated
+% LSS April 6 2025; add input units (started); Sept 3 2025 continued
 
 saveparamsandarrays = true ;
 
@@ -40,9 +45,20 @@ neuron = readneuronfile(neuronfile, simulation) ;
 % these are read from a file
 [basalinputs, apicalinputs, apicalshuntinputs, basalshuntinputs, IIinputs] = readexternalinput(externalinputs) ;
 
+% read the driving inputs (test and train eventually) in to a structure
+% [traindata, testdata] = readaudioinputspikes(drivinginputinfo) ; till
+% later
+
 
 % initialise rest of structures based on parameters, number of inputs and shunts and external inputs
 % allocate last one first: essentially pre-allocating
+
+% input neurons
+for inputnno = simulation.N_Inputs:-1:1
+    inputneuron(inputnno).number = inputnno ; % really just a placeholder
+end
+
+% two point neurons
 for tpnno = simulation.N_TPNs:-1:1 % place in correct structure
     basal(tpnno).basalinputs = basalinputs(basalinputs(:,1) == tpnno, :) ;
     basal(tpnno).basalinputs = basal(tpnno).basalinputs(:, 2:3) ;
@@ -79,8 +95,6 @@ end
 
 % II (LIF) neuron setup
 % external II inputs format: <II_number time synapse_number>
-
-
 IIneuron = readIIneuronfile(iifile, simulation) ;
 for IIno = simulation.N_IIs:-1:1 % allocate last one first: essentially pre-allocating
     IIneuron(IIno).thresh_increment = calc_thresh_increment(IIneuron(IIno).thresh_leap, IIneuron(IIno).thresh_decay, ...
@@ -116,7 +130,7 @@ end
 % now set up interconnection
 % connectionfile = "network1.txt" ;
 % connectionfile has table for interconnection, format described in setupinterconnection
-[neuron, IIneuron] = setupinterconnection(simulation, neuron, IIneuron, connectionfile) ;
+[neuron, IIneuron] = setupinterconnection( simulation, inputneuron, neuron, IIneuron, connectionfile) ;
 
 
 

@@ -173,7 +173,7 @@ ahactiv = zeros([simulation.N_TPNs simulation.simlength]) ;
 
 % calc-thresh_increment has been calculated
 
-% sort apical and basal inputs, additive and shunting, into time order
+% sort external apical and basal inputs, additive and shunting, into time order
 % both apical and basal inputs are a 2d array with
 % N_spikes rows 2 columns <time neuron>
 for tpnno = 1:simulation.N_TPNs

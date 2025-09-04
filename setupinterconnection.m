@@ -1,4 +1,4 @@
-function [neuron, IIneuron] = setupinterconnection(simulation, neuron, IIneuron, connectionfile)
+function [neuron, IIneuron] = setupinterconnection(simulation, inputneuron, neuron, IIneuron, connectionfile)
 %% setupinterconnection: sets up the connections between the neurons
 %
 % read in table of connections from connectionfile
@@ -14,7 +14,19 @@ function [neuron, IIneuron] = setupinterconnection(simulation, neuron, IIneuron,
 % synapse_type>
 targetno_tp = ones([1 simulation.N_TPNs]) ;
 targetno_ii = ones([1 simulation.N_IIs]) ;
+targetno_ni = ones([1 simulation.N_Inputs]) ;
 for arcs = 1:n_arcs % test each arc
+    if strcmp(nettable(arcs,1).from_ntype, 'X') % input neuron
+        from = nettable(arcs,2).from_nno ;
+        tgt.to_ntype = nettable(arcs,3).to_ntype ;
+        tgt.to_nno = nettable(arcs,4).to_nno ;
+        tgt.to_syntype = nettable(arcs,5).to_syntype ;
+        tgt.to_synno = nettable(arcs,6).to_synno ;
+        tgt.delay = nettable(arcs,7).delay ;
+        tgt.delaysamps = ceil(tgt.delay/simulation.timestep) ; % delay in samples
+        inputneuron(from).targets(targetno_ni(from)) = tgt ;
+        targetno_ni(from) = targetno_ni(from) + 1 ;
+    end
     if strcmp(nettable(arcs,1).from_ntype,'TPN')
         % add this to the neuron targets for TPN neuron
         % nettable(arcs,2).from_nno
@@ -41,6 +53,7 @@ for arcs = 1:n_arcs % test each arc
         IIneuron(from).targets(targetno_ii(from)) = tgt ;
         targetno_ii(from) = targetno_ii(from) + 1 ;
     end
+   
 end
 
 

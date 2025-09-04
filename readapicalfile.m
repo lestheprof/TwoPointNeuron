@@ -2,7 +2,7 @@ function apical = readapicalfile(fname, simulation)
 %readapicalfile reads file fname into a table and converts to a structure
 %
 % LSS 11 Dec 2024 started
-% las modified 15 Dec2024, added n_apical_inputs
+% last modified 15 Dec2024, added n_apical_inputs
 % 
 [n_lines, apicaltable] = readnetwork(fname) ;
 %
