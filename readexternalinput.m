@@ -1,4 +1,4 @@
-function [basalinputs, apicalinputs, apicalshuntinputs, basalshuntinputs, IIinputs] = readexternalinput(fname)
+function [basalinputs, apicalinputs, apicalshuntinputs, basalshuntinputs, IIinputs, xinputs] = readexternalinput(fname)
 %readexternalinput reads external spiking input from file fname
 %   X to Input units
 %   B basal input, A apical input, AS apical shunt, BS basal shunt, II

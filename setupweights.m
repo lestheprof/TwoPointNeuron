@@ -24,18 +24,20 @@ for wtno = 1:n_weights % test each arc
                 case 'BS'
                     shunts(weighttable(wtno,2).neuron_number).basalshuntweights(weighttable(wtno,4).syn_number) = weighttable(wtno,5).weight ;
                 otherwise
-                    error("setupweights: TPN synapse type %s is not valid", weighttable(wtno,3).syn_type) ;
+                    error("setupweights: TPN synapse type %s is not valid", char(weighttable(wtno,3).syn_type)) ;
             end
         case 'II' % inhibitory interneuron
             switch char(weighttable(wtno,3).syn_type)
                 case 'S'
                     IIsynapse(weighttable(wtno,2).neuron_number).weights(weighttable(wtno,4).syn_number) = weighttable(wtno,5).weight ;
                 otherwise
-                    error("setupweights: II synapse type %s is not valid", weighttable(wtno,3).syn_type) ;
+                    error("setupweights: II synapse type %s is not valid", char(weighttable(wtno,3).syn_type)) ;
             end
+        case 'X' % weight to input neuron is not valid
+            error("setupweights: weight to input neuron is not permitted") ;
 
         otherwise
-            error("setupweights: Neuron type %s is not valid", weighttable(wtno,1).neuron_type)
+            error("setupweights: Neuron type %s is not valid", char(weighttable(wtno,1).neuron_type)) ;
     end
 
 end

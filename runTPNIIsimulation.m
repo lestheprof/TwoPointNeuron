@@ -43,7 +43,7 @@ neuron = readneuronfile(neuronfile, simulation) ;
 
 
 % these are read from a file
-[basalinputs, apicalinputs, apicalshuntinputs, basalshuntinputs, IIinputs] = readexternalinput(externalinputs) ;
+[basalinputs, apicalinputs, apicalshuntinputs, basalshuntinputs, IIinputs, Xinputs] = readexternalinput(externalinputs) ;
 
 % read the driving inputs (test and train eventually) in to a structure
 % [traindata, testdata] = readaudioinputspikes(drivinginputinfo) ; till
@@ -56,6 +56,7 @@ neuron = readneuronfile(neuronfile, simulation) ;
 % input neurons
 for inputnno = simulation.N_Inputs:-1:1
     inputneuron(inputnno).number = inputnno ; % really just a placeholder
+    inputneuron(inputnno).xinputs = Xinputs(Xinputs(:,1) == inputnno, :) ;
 end
 
 % two point neurons
@@ -130,7 +131,7 @@ end
 % now set up interconnection
 % connectionfile = "network1.txt" ;
 % connectionfile has table for interconnection, format described in setupinterconnection
-[neuron, IIneuron] = setupinterconnection( simulation, inputneuron, neuron, IIneuron, connectionfile) ;
+[inputneuron, neuron, IIneuron] = setupinterconnection( simulation, inputneuron, neuron, IIneuron, connectionfile) ;
 
 
 

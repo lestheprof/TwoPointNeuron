@@ -1,4 +1,4 @@
-function [neuron, IIneuron] = setupinterconnection(simulation, inputneuron, neuron, IIneuron, connectionfile)
+function [inputneuron, neuron, IIneuron] = setupinterconnection(simulation, inputneuron, neuron, IIneuron, connectionfile)
 %% setupinterconnection: sets up the connections between the neurons
 %
 % read in table of connections from connectionfile
