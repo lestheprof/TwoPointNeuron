@@ -68,7 +68,7 @@ for inputnno = simulation.N_Inputs:-1:1
         inputneuron(inputnno).inputindex = 0 ;
     end
 end
-% 
+%
 %% note that weights have been declared but not set
 
 % need to read in weights before calling setupnetwork
@@ -82,7 +82,7 @@ IIneuron = readIIneuronfile(iifile, simulation) ;
 % weightfile = "weights1.txt" ;
 [basal, apical, shunts, IIneuron] = setupweights(weightfile, basal, apical, shunts, IIneuron) ;
 for tpnno = 1:simulation.N_TPNs
-% calculate the amount tio be added to the threshold whne a spike occurs.
+    % calculate the amount tio be added to the threshold whne a spike occurs.
     neuron(tpnno).thresh_increment = calc_thresh_increment(neuron(tpnno).thresh_leap, neuron(tpnno).thresh_decay, ...
         neuron(tpnno).refractoryperiod, neuron(tpnno).relrefperiod, simulation.timestep) ;
 end
@@ -101,44 +101,61 @@ bain = basalinputs ;
 aind = size(apin, 1) ;
 bind = size(bain, 1) ;
 
-% redefine apicalinputs and basalinputs to include externalinput from input neurons
+%% redefine apicalinputs and basalinputs to include externalinput from input neurons
 % count how many there are
+% apical and basal
 aindex = aind ;
+bindex = bind ;
 for xno = 1:simulation.N_Inputs
     for exinputno = 1: size(inputneuron(xno).xinputs, 1 )
         % some of these may fo to more than one place.
         for targetno = 1:length(inputneuron(xno).targets)
             if  char(inputneuron(xno).targets(targetno).to_syntype) == 'A'
                 aindex = aindex + 1 ;
+            else
+                if  char(inputneuron(xno).targets(targetno).to_syntype) == 'B'
+                    bindex = bindex + 1 ;
+                end
             end
         end
     end
 end
 apicalinputs = zeros([aindex 3]) ; % neuronno time synapseno
 apicalinputs(1:aind, :) = apin ;
+basalinputs = zeros([bindex 3]) ; % neuronno time synapseno
+basalinputs(1:bind) = bain ;
 
 for xno = 1:simulation.N_Inputs
     for exinputno = 1: size(inputneuron(xno).xinputs, 1 )
         % each input gets appended to the target
         for targetno = 1:length(inputneuron(xno).targets)
-        switch char(inputneuron(xno).targets(exinputno).to_syntype)
-            case 'A' % input to an apical part of a TPN
-                % update
-                aind = aind + 1 ;
-                %  add delay 
-                inputneuron(xno).xinputs(exinputno, 2) = inputneuron(xno).xinputs(exinputno, 2) + inputneuron(xno).targets(targetno).delay ;
-                % inputneuron(xno).xinputs(exinputno, 2) = inputneuron(xno).xinputs(exinputno, 2) /simulation.timestep   ;
-                apicalinputs(aind, 2) =  inputneuron(xno).xinputs(exinputno, 2) ; %time
-                apicalinputs(aind, 1) = inputneuron(xno).targets(targetno).to_nno ; % neuron no
-                apicalinputs(aind, 3) = inputneuron(xno).targets(targetno).to_synno ; % synapse no
+            switch char(inputneuron(xno).targets(targetno).to_syntype)
+                case 'A' % input to an apical part of a TPN
+                    % update
+                    aind = aind + 1 ;
+                    %  add delay
+                    stime = inputneuron(xno).xinputs(exinputno, 2) + inputneuron(xno).targets(targetno).delay ;
+                    % inputneuron(xno).xinputs(exinputno, 2) = inputneuron(xno).xinputs(exinputno, 2) /simulation.timestep   ;
+                    apicalinputs(aind, 2) =  stime ; %time
+                    apicalinputs(aind, 1) = inputneuron(xno).targets(targetno).to_nno ; % neuron no
+                    apicalinputs(aind, 3) = inputneuron(xno).targets(targetno).to_synno ; % synapse no
 
-            case 'B' % input to a basal part of a TPN
-                bindex = bindex + 1 ;
-        end
+                case 'B' % input to a basal part of a TPN
+                    % update
+                    bind = bind + 1 ;
+                    %  add delay
+                    stime = inputneuron(xno).xinputs(exinputno, 2) + inputneuron(xno).targets(targetno).delay ;
+                    % inputneuron(xno).xinputs(exinputno, 2) = inputneuron(xno).xinputs(exinputno, 2) /simulation.timestep   ;
+                    basalinputs(bind, 2) =  stime ; %time
+                    basalinputs(bind, 1) = inputneuron(xno).targets(targetno).to_nno ; % neuron no
+                    basalinputs(bind, 3) = inputneuron(xno).targets(targetno).to_synno ; % synapse no
+            end
         end
 
     end
 end
+
+
 
 
 for tpnno = simulation.N_TPNs:-1:1 % place in correct structure
@@ -153,8 +170,8 @@ for tpnno = simulation.N_TPNs:-1:1 % place in correct structure
     % set up weight vectors (now in file reading function)
 
     % calculate the amount tio be added to the threshold whne a spike occurs.
-   % neuron(tpnno).thresh_increment = calc_thresh_increment(neuron(tpnno).thresh_leap, neuron(tpnno).thresh_decay, ...
-   %     neuron(tpnno).refractoryperiod, neuron(tpnno).relrefperiod, simulation.timestep) ;
+    % neuron(tpnno).thresh_increment = calc_thresh_increment(neuron(tpnno).thresh_leap, neuron(tpnno).thresh_decay, ...
+    %     neuron(tpnno).refractoryperiod, neuron(tpnno).relrefperiod, simulation.timestep) ;
     neuron(tpnno).th_inc_length = length(neuron(tpnno).thresh_increment) ;
     neuron(tpnno).spikes = zeros([1 neuron(tpnno).maxnospikes]) ;
     neuron(tpnno).spikecount = 0 ;
