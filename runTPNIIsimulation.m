@@ -56,10 +56,91 @@ neuron = readneuronfile(neuronfile, simulation) ;
 % input neurons
 for inputnno = simulation.N_Inputs:-1:1
     inputneuron(inputnno).number = inputnno ; % really just a placeholder
-    inputneuron(inputnno).xinputs = Xinputs(Xinputs(:,1) == inputnno, :) ;
+    if isempty(Xinputs)
+        inputneuron(inputnno).inputindex = 0 ; % 0 means no input on this input neuron
+    else
+        inputneuron(inputnno).xinputs = Xinputs(Xinputs(:,1) == inputnno, :) ;
+        inputneuron(inputnno).inputindex = 1 ;
+    end
+end
+for inputnno = simulation.N_Inputs:-1:1
+    if isempty(inputneuron(inputnno).xinputs)
+        inputneuron(inputnno).inputindex = 0 ;
+    end
+end
+% 
+%% note that weights have been declared but not set
+
+% need to read in weights before calling setupnetwork
+
+% external II inputs format: <II_number time synapse_number>
+IIneuron = readIIneuronfile(iifile, simulation) ;
+
+% read in the weights
+% weights are per synapse: <neuron_type neuron_number syn_type
+% syn_number weight>
+% weightfile = "weights1.txt" ;
+[basal, apical, shunts, IIneuron] = setupweights(weightfile, basal, apical, shunts, IIneuron) ;
+for tpnno = 1:simulation.N_TPNs
+% calculate the amount tio be added to the threshold whne a spike occurs.
+    neuron(tpnno).thresh_increment = calc_thresh_increment(neuron(tpnno).thresh_leap, neuron(tpnno).thresh_decay, ...
+        neuron(tpnno).refractoryperiod, neuron(tpnno).relrefperiod, simulation.timestep) ;
 end
 
-% two point neurons
+% now set up interconnection
+% connectionfile = "network1.txt" ;
+% connectionfile has table for interconnection, format described in setupinterconnection
+[inputneuron, neuron, IIneuron] = setupinterconnection( simulation, inputneuron, neuron, IIneuron, connectionfile) ;
+
+% process inputneurons: add input spikes to appropriate TPN apical and
+% basal structures. This is practical because the external inputs are
+% fixed.
+apin = apicalinputs ;
+bain = basalinputs ;
+
+aind = size(apin, 1) ;
+bind = size(bain, 1) ;
+
+% redefine apicalinputs and basalinputs to include externalinput from input neurons
+% count how many there are
+aindex = aind ;
+for xno = 1:simulation.N_Inputs
+    for exinputno = 1: size(inputneuron(xno).xinputs, 1 )
+        % some of these may fo to more than one place.
+        for targetno = 1:length(inputneuron(xno).targets)
+            if  char(inputneuron(xno).targets(targetno).to_syntype) == 'A'
+                aindex = aindex + 1 ;
+            end
+        end
+    end
+end
+apicalinputs = zeros([aindex 3]) ; % neuronno time synapseno
+apicalinputs(1:aind, :) = apin ;
+
+for xno = 1:simulation.N_Inputs
+    for exinputno = 1: size(inputneuron(xno).xinputs, 1 )
+        % each input gets appended to the target
+        for targetno = 1:length(inputneuron(xno).targets)
+        switch char(inputneuron(xno).targets(exinputno).to_syntype)
+            case 'A' % input to an apical part of a TPN
+                % update
+                aind = aind + 1 ;
+                %  add delay 
+                inputneuron(xno).xinputs(exinputno, 2) = inputneuron(xno).xinputs(exinputno, 2) + inputneuron(xno).targets(targetno).delay ;
+                % inputneuron(xno).xinputs(exinputno, 2) = inputneuron(xno).xinputs(exinputno, 2) /simulation.timestep   ;
+                apicalinputs(aind, 2) =  inputneuron(xno).xinputs(exinputno, 2) ; %time
+                apicalinputs(aind, 1) = inputneuron(xno).targets(targetno).to_nno ; % neuron no
+                apicalinputs(aind, 3) = inputneuron(xno).targets(targetno).to_synno ; % synapse no
+
+            case 'B' % input to a basal part of a TPN
+                bindex = bindex + 1 ;
+        end
+        end
+
+    end
+end
+
+
 for tpnno = simulation.N_TPNs:-1:1 % place in correct structure
     basal(tpnno).basalinputs = basalinputs(basalinputs(:,1) == tpnno, :) ;
     basal(tpnno).basalinputs = basal(tpnno).basalinputs(:, 2:3) ;
@@ -72,8 +153,8 @@ for tpnno = simulation.N_TPNs:-1:1 % place in correct structure
     % set up weight vectors (now in file reading function)
 
     % calculate the amount tio be added to the threshold whne a spike occurs.
-    neuron(tpnno).thresh_increment = calc_thresh_increment(neuron(tpnno).thresh_leap, neuron(tpnno).thresh_decay, ...
-        neuron(tpnno).refractoryperiod, neuron(tpnno).relrefperiod, simulation.timestep) ;
+   % neuron(tpnno).thresh_increment = calc_thresh_increment(neuron(tpnno).thresh_leap, neuron(tpnno).thresh_decay, ...
+   %     neuron(tpnno).refractoryperiod, neuron(tpnno).relrefperiod, simulation.timestep) ;
     neuron(tpnno).th_inc_length = length(neuron(tpnno).thresh_increment) ;
     neuron(tpnno).spikes = zeros([1 neuron(tpnno).maxnospikes]) ;
     neuron(tpnno).spikecount = 0 ;
@@ -95,8 +176,7 @@ for tpnno = simulation.N_TPNs:-1:1 % place in correct structure
 end
 
 % II (LIF) neuron setup
-% external II inputs format: <II_number time synapse_number>
-IIneuron = readIIneuronfile(iifile, simulation) ;
+
 for IIno = simulation.N_IIs:-1:1 % allocate last one first: essentially pre-allocating
     IIneuron(IIno).thresh_increment = calc_thresh_increment(IIneuron(IIno).thresh_leap, IIneuron(IIno).thresh_decay, ...
         IIneuron(IIno).refractoryperiod, IIneuron(IIno).relrefperiod, simulation.timestep) ;
@@ -108,16 +188,6 @@ for IIno = simulation.N_IIs:-1:1 % allocate last one first: essentially pre-allo
     IIneuron(IIno).spikeno = 1 ;
 end
 
-%% note that weights have been declared but not set
-
-% need to read in weights before calling setupnetwork
-
-% read in the weights
-% weights are per synapse: <neuron_type neuron_number syn_type
-% syn_number weight>
-% weightfile = "weights1.txt" ;
-[basal, apical, shunts, IIneuron] = setupweights(weightfile, basal, apical, shunts, IIneuron) ;
-
 [simulation, neuron, basal,apical, shunts, apicalcurrent, basalcurrent, ...
     apicalactivation, basalactivation, ahactiv, IIneuron] = ...
     setupnetworkV2(simulation,neuron,basal, apical,shunts, IIneuron) ;
@@ -128,21 +198,14 @@ if (saveparamsandarrays)
         "apicalactivation", "basalactivation", "ahactiv", "IIneuron");
 end
 
-% now set up interconnection
-% connectionfile = "network1.txt" ;
-% connectionfile has table for interconnection, format described in setupinterconnection
-[inputneuron, neuron, IIneuron] = setupinterconnection( simulation, inputneuron, neuron, IIneuron, connectionfile) ;
-
-
-
-
 % now call TPN_runstep for
 % each TPN, and II_runstep for each inhibitory interneuron
 
 for ts = 1:simulation.simlength
+    % process TPNs
     for tpnno = 1:simulation.N_TPNs
         [isspike, neuron,   apicalcurrent, basalcurrent, apicalactivation, basalactivation, ...
-            ahactiv,  apical, basal, shunts] = TPN_runstep(ts, tpnno, simulation, neuron, apical, basal, shunts, ... % parameters
+            ahactiv,  apical, basal, shunts] = TPN_runstep(ts, tpnno, simulation, neuron, inputneuron, apical, basal, shunts, ... % parameters
             apicalcurrent, basalcurrent, apicalactivation, basalactivation, ahactiv) ;
         if isspike
             if (isfield(neuron(tpnno),"targets"))

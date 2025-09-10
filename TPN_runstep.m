@@ -1,5 +1,5 @@
 function [isspike, neuron,   apicalcurrent, basalcurrent, apicalactivation, basalactivation, ...
-    ahactiv,  apical, basal, shunts] = TPN_runstep(ts, tpnno, simulation, neuron,  apical, basal, shunts, ... % parameters
+    ahactiv,  apical, basal, shunts] = TPN_runstep(ts, tpnno, simulation, neuron,  inputneuron, apical, basal, shunts, ... % parameters
     apicalcurrent, basalcurrent, apicalactivation, basalactivation, ahactiv)
 % run TPN simulation for one neuron for onetimestep, returning true if a spike is
 % generated
@@ -32,6 +32,7 @@ function [isspike, neuron,   apicalcurrent, basalcurrent, apicalactivation, basa
 % apicalpostsynapse, basalpostsynapse, apicalcurrent, basalcurrent, apicalactivation, basalactivation,
 % threshold, ahactiv: supplied (and return) values for each timestep describing values
 % inside neuron.
+% inputneuron: external inputs targetting only apical and basal areas of TPNs.
 %% returns
 % isspike: true if there is a spike at this timestep
 % neuron:some parameters that may be altered are returned
