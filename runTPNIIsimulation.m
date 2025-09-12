@@ -24,7 +24,9 @@ function spikelist = runTPNIIsimulation(simfile, apicalfile, basalfile, shuntfil
 % LSS April 6 2025; add input units (started); Sept 3 2025 continued
 
 saveparamsandarrays = true ;
-
+spikeplot = false ; % plot spikes
+spikesave = true ; % save spikes in form <neuron time>
+weightsave = true ; % save (amended) weights
 
 % read simulation parameters in from file
 [~, simulation] = readnetwork(simfile) ;
@@ -212,11 +214,11 @@ end
 if (saveparamsandarrays)
     save(strcat("paramsarrays",string(datetime("today")), ".mat"), "simulation", "neuron", "basal","apical", "shunts", ...
         "apicalcurrent", "basalcurrent", ...
-        "apicalactivation", "basalactivation", "ahactiv", "IIneuron");
+        "apicalactivation", "basalactivation", "ahactiv", "IIneuron", "inputneuron");
 end
 
-% now call TPN_runstep for
-% each TPN, and II_runstep for each inhibitory interneuron
+
+%% run simulation: run TPN_runstep and II_runstep for each TPN and each inhibitory interneuron
 
 for ts = 1:simulation.simlength
     % process TPNs
@@ -297,35 +299,43 @@ for ts = 1:simulation.simlength
     end
 end
 
-
-% plot spikes
 spikelist = createspikelist(simulation, neuron, IIneuron) ;
-figure ;
-spikeraster(spikelist)  ;
-
-set(groot,'defaultLineLineWidth',2.0) ;
-
-for tpnno = 1:simulation.N_TPNs
+if spikesave
+    save( strcat("spikelist",string(datetime("today")), ".mat") , "spikelist") ;
+end
+if spikeplot
+    % plot spikes
     figure ;
-    plot(ahactiv(tpnno,:)', 'DisplayName','ahactiv') ;
-    hold on
-    plot(neuron(tpnno).TP_threshold, 'DisplayName','threshold') ;
-    plot(apicalactivation(tpnno,:), 'DisplayName','ap activ') ;
-    plot(basalactivation(tpnno,:), 'DisplayName','ba activ') ;
-    title(['TPN ', num2str(tpnno), ' neuron axon hillock and threshold']) ;
-    legend ;
-end
-for IIno = 1:simulation.N_IIs
-    figure;
-    plot(IIneuron(IIno).activation, 'DisplayName','activation') ;
-    hold on
-    plot(IIneuron(IIno).II_threshold, 'DisplayName','threshold') ;
-    title(['II ', num2str(IIno),  ' neuron axon hillock and threshold']) ;
-    legend ;
+    spikeraster(spikelist)  ;
+
+    set(groot,'defaultLineLineWidth',2.0) ;
+
+    for tpnno = 1:simulation.N_TPNs
+        figure ;
+        plot(ahactiv(tpnno,:)', 'DisplayName','ahactiv') ;
+        hold on
+        plot(neuron(tpnno).TP_threshold, 'DisplayName','threshold') ;
+        plot(apicalactivation(tpnno,:), 'DisplayName','ap activ') ;
+        plot(basalactivation(tpnno,:), 'DisplayName','ba activ') ;
+        title(['TPN ', num2str(tpnno), ' neuron axon hillock and threshold']) ;
+        legend ;
+    end
+    for IIno = 1:simulation.N_IIs
+        figure;
+        plot(IIneuron(IIno).activation, 'DisplayName','activation') ;
+        hold on
+        plot(IIneuron(IIno).II_threshold, 'DisplayName','threshold') ;
+        title(['II ', num2str(IIno),  ' neuron axon hillock and threshold']) ;
+        legend ;
+    end
 end
 
+% write out weights if required
+if weightsave
+    wstrings = split(weightfile, ".") ;
+    writeweightstofile(strcat(wstrings(1),"_out.txt"), simulation, apical, basal, IIneuron) ;
+end
 % format long
 % max(ahactiv)
 
 end
-% xlim([0.4/simulation.timestep 0.6/simulation.timestep]) ;
