@@ -22,11 +22,14 @@ function spikelist = runTPNIIsimulation(simfile, apicalfile, basalfile, shuntfil
 % structure. Also added resetvalue to apical, basal and IIneuron structures
 % to optionally allow resetting activation after a spike is generated
 % LSS April 6 2025; add input units (started); Sept 3 2025 continued
+% LSS Sept 14 2025; add saving of possibly modified weights to file,
+% enabling re-use.
 
 saveparamsandarrays = true ;
-spikeplot = false ; % plot spikes
+spikeplot = true ; % plot spikes
 spikesave = true ; % save spikes in form <neuron time>
 weightsave = true ; % save (amended) weights
+networksave = true ; % save network (connectionfile) (includes delays)
 
 % read simulation parameters in from file
 [~, simulation] = readnetwork(simfile) ;
@@ -223,10 +226,10 @@ end
 for ts = 1:simulation.simlength
     % process TPNs
     for tpnno = 1:simulation.N_TPNs
-        [isspike, neuron,   apicalcurrent, basalcurrent, apicalactivation, basalactivation, ...
+        [TPNspike, neuron,   apicalcurrent, basalcurrent, apicalactivation, basalactivation, ...
             ahactiv,  apical, basal, shunts] = TPN_runstep(ts, tpnno, simulation, neuron, inputneuron, apical, basal, shunts, ... % parameters
             apicalcurrent, basalcurrent, apicalactivation, basalactivation, ahactiv) ;
-        if isspike
+        if TPNspike
             if (isfield(neuron(tpnno),"targets"))
                 % process spike by supplying spikes to neuron(tpnno).targets at
                 for tgno = 1:length(neuron(tpnno).targets) % for each target
@@ -297,8 +300,11 @@ for ts = 1:simulation.simlength
             end %if IIspike
         end % if isfield
     end
+    % if TPNspike or IIspike then do spike-time based adaptation for this
+    % timestep
 end
 
+%% simulation complete.
 spikelist = createspikelist(simulation, neuron, IIneuron) ;
 if spikesave
     save( strcat("spikelist",string(datetime("today")), ".mat") , "spikelist") ;
@@ -334,6 +340,11 @@ end
 if weightsave
     wstrings = split(weightfile, ".") ;
     writeweightstofile(strcat(wstrings(1),"_out.txt"), simulation, apical, basal, IIneuron) ;
+end
+% write out network (with delays) if required
+if networksave
+    nstrings = split(connectionfile, ".") ;
+    writenetworktofile(strcat(nstrings(1),"_out.txt"), simulation, inputneuron,  neuron, IIneuron) ;
 end
 % format long
 % max(ahactiv)
